@@ -1,0 +1,5 @@
+# canon-lint baseline: pinned banned-word debt, `<path> <word> <count>`.
+# Regenerate with bin/canon-lint --update-baseline after paying debt down;
+# new occurrences must be fixed, not baselined, unless historically bound.
+grounding/cs-ontology.md observer 2
+grounding/governed-self-extension.md mission 2

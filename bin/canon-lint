@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+"""Workspace canon lint — the mechanical ratchet for amendments D-4 and D-5.
+
+Checks, in order:
+  1. Canon presence: formalism/{README,laws,lexicon,loop,amendments}.md exist
+     at the workspace root (D-4: the canon's home moved here 2026-07-03).
+  2. Canon link integrity: every relative markdown link inside formalism/
+     resolves to a real file.
+  3. Banned-word sweep over design prose: formalism/ (lexicon.md exempt — it
+     is the arbiter and names the banned words), plans/, and
+     verlet-kernel/.plan-local/. Compared against a per-file-per-word
+     baseline so historical debt is pinned, new occurrences fail, and paid-
+     down debt must be recorded (same semantics as the retired repo's
+     lexicon_lint.rs).
+
+Usage:
+  bin/canon-lint                    check (exit 1 on any violation)
+  bin/canon-lint --update-baseline  regenerate bin/canon-lint-baseline.txt
+
+A line containing `lexicon-allow: <word>` is exempt for that word.
+"""
+
+import re
+import sys
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parent.parent
+BASELINE_PATH = REPO / "bin" / "canon-lint-baseline.txt"
+
+CANON_DIR = REPO
+CANON_FILES = ["README.md", "laws.md", "lexicon.md"]
+
+# Banned-word patterns (see formalism/lexicon.md, Banned And Deprecated Words).
+# Prose-scoped subset: words whose appearance in design prose is the signal;
+# product words (hook, memory, subagent) legitimately appear in plans prose.
+BANNED = {
+    "capsule": re.compile(r"\bcapsules?\b", re.IGNORECASE),
+    "observer": re.compile(r"\bobservers?\b", re.IGNORECASE),
+    "context-strategy": re.compile(r"\bcontext strateg", re.IGNORECASE),
+    "mission": re.compile(r"\bmissions?\b", re.IGNORECASE),
+}
+
+SWEEP_ROOTS = [
+    (CANON_DIR, {"lexicon.md"}),
+    (REPO / "grounding", set()),
+]
+
+LINK_RE = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+
+
+def fail(messages):
+    for message in messages:
+        print(message, file=sys.stderr)
+    sys.exit(1)
+
+
+def check_presence():
+    missing = [name for name in CANON_FILES if not (CANON_DIR / name).is_file()]
+    if missing:
+        fail([f"canon file missing from {CANON_DIR}: {name}" for name in missing]
+             + ["the canon's home is the workspace root formalism/ (amendment D-4)"])
+
+
+def check_links():
+    problems = []
+    for name in CANON_FILES:
+        path = CANON_DIR / name
+        for lineno, line in enumerate(path.read_text().splitlines(), 1):
+            for target in LINK_RE.findall(line):
+                if target.startswith(("http://", "https://", "mailto:", "#")):
+                    continue
+                resolved = (path.parent / target.split("#")[0]).resolve()
+                if not resolved.exists():
+                    problems.append(f"formalism/{name}:{lineno}: broken link -> {target}")
+    if problems:
+        fail(problems)
+
+
+def sweep():
+    counts = {}  # (relpath, word) -> count
+    for root, exempt in SWEEP_ROOTS:
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob("*.md")):
+            if path.name in exempt:
+                continue
+            rel = str(path.relative_to(REPO))
+            for line in path.read_text(errors="replace").splitlines():
+                for word, pattern in BANNED.items():
+                    if f"lexicon-allow: {word}" in line:
+                        continue
+                    hits = len(pattern.findall(line))
+                    if hits:
+                        counts[(rel, word)] = counts.get((rel, word), 0) + hits
+    return counts
+
+
+def load_baseline():
+    baseline = {}
+    if not BASELINE_PATH.is_file():
+        return baseline
+    for lineno, raw in enumerate(BASELINE_PATH.read_text().splitlines(), 1):
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        fields = line.rsplit(" ", 2)
+        if len(fields) != 3:
+            fail([f"canon-lint-baseline.txt:{lineno}: expected `<path> <word> <count>`"])
+        path, word, count = fields
+        baseline[(path, word)] = int(count)
+    return baseline
+
+
+def write_baseline(counts):
+    lines = [
+        "# canon-lint baseline: pinned banned-word debt, `<path> <word> <count>`.",
+        "# Regenerate with bin/canon-lint --update-baseline after paying debt down;",
+        "# new occurrences must be fixed, not baselined, unless historically bound.",
+    ]
+    for (path, word), count in sorted(counts.items()):
+        lines.append(f"{path} {word} {count}")
+    BASELINE_PATH.write_text("\n".join(lines) + "\n")
+    print(f"baseline written: {len(counts)} entries -> {BASELINE_PATH.relative_to(REPO)}")
+
+
+def main():
+    update = "--update-baseline" in sys.argv[1:]
+    check_presence()
+    check_links()
+    counts = sweep()
+    if update:
+        write_baseline(counts)
+        return
+
+    baseline = load_baseline()
+    problems = []
+    for key, count in sorted(counts.items()):
+        allowed = baseline.get(key, 0)
+        if count > allowed:
+            path, word = key
+            problems.append(f"{path}: {word} x{count} (baseline {allowed}) — new banned-word use")
+    for key, allowed in sorted(baseline.items()):
+        actual = counts.get(key, 0)
+        if actual < allowed:
+            path, word = key
+            problems.append(f"{path}: {word} debt shrank ({allowed} -> {actual}); run --update-baseline")
+    if problems:
+        problems.append("see formalism/lexicon.md#banned-and-deprecated-words; "
+                        "mark intentional lines with `lexicon-allow: <word>`")
+        fail(problems)
+    print("canon-lint: presence, links, banned words — green")
+
+
+if __name__ == "__main__":
+    main()
