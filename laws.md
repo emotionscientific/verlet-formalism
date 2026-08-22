@@ -62,7 +62,7 @@ compiles the laws; declarations pick the instances; couplings do the work.
 ## Carried Laws
 
 Laws the ancestry carries, stated canonically here; the narratives that
-motivate them live in [the CS ontology](../grounding/cs-ontology.md):
+motivate them live in [the CS ontology](grounding/cs-ontology.md):
 
 - Specialization is auditable: a residual program with no receipt for how
   it was produced is folklore, not a harness.

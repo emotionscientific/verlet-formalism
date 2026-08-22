@@ -988,7 +988,7 @@ after compile is canon words only (operation, manifest, policy).
 The CS ancestry of these words — partial evaluation and the Futamura tower,
 traits and structural composition, algebraic effects, initial encodings,
 template metaprogramming — and the precise departures from each are documented
-in [The CS Ontology](../grounding/cs-ontology.md) (grounding tier). The physics
+in [The CS Ontology](grounding/cs-ontology.md) (grounding tier). The physics
 and philosophy ancestry
 lives with the epistemic model. How this lexicon changes is
 [README.md](README.md), How It Changes: wrong content is struck directly;
