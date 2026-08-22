@@ -762,6 +762,18 @@ selection, not authentication: a credential the selected instance rejects is
 rejected outright, and no other instance is probed. Identifiers in a request
 body never override the connection's routed instance.
 
+### endpoint record
+
+The file an instance writes beside each filesystem root it owns, naming the
+process (pid) and the local listener (unix socket, optionally a websocket
+URL) through which that instance can be reached. It is the only discovery
+mechanism: a client resolves the root's endpoint record, checks the pid is
+alive, and connects; it never scans ports or opens the root's stores itself.
+
+Law: one instance per root means one endpoint record per root. A live record
+refuses a second instance before any store is opened; a stale record (dead
+pid) is overwritten by the next instance and ignored by clients.
+
 ### conductor
 
 An external client driving a thread through the boundary surface: submitting
