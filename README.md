@@ -30,6 +30,25 @@ in that checkout: "find where the lexicon entry for *binding* is implemented
 and show me the attach and detach events." The text here is meant to be
 checkable against the code, not trusted on its own.
 
+## How this is built
+
+Coding agents are used extensively in the development of Verlet, including
+this document. Several different models draft, implement, and cross-examine
+each other's claims, and a human architect makes the design decisions and
+reviews what lands. This is what lets a very small team build a project of
+this size at this speed, and it is why fixes land quickly after they are
+found.
+
+The formalism exists to hold the design intention fixed while the code
+moves. It is the reference the agents are constrained by: the lexicon names
+every primitive before it is implemented, the laws say what may not be
+configured away, and the runtime is scanned against both on a regular
+cadence. A scan that finds code and canon disagreeing produces either a fix
+to the code or a struck line here, with a commit that says which.
+
+Treat the text accordingly. It is current, it is checked, and it will
+change.
+
 ## How it changes
 
 Wrong content is struck directly by whoever finds it. Contested changes
