@@ -16,7 +16,7 @@ there with a commit that says which.
 | [`laws.md`](laws.md) | The laws that bind the system as a whole: the split between surfaces and couplings, the three laws, and the ladder of what is compiled into the kernel versus declared above it. Short. Read first. |
 | [`lexicon.md`](lexicon.md) | Every primitive the runtime names, one entry each, with the word-level laws that travel with the word. New primitives are named here before they are implemented. |
 | [`grounding/`](grounding/) | Longer background notes: the computer-science ancestry the design borrows from and departs from, the event and observation model, durable coordination and resume, and governed self-extension. Written July 2026; see the dating note at the top of each. |
-| [`bin/canon-lint`](bin/canon-lint) | The mechanical check: canon files present, every relative link resolves, banned words absent from design prose. Runs in CI on every push. |
+| [`bin/canon-lint`](bin/canon-lint) | The mechanical check: canon files present, every relative link resolves, banned words absent from design prose. |
 
 ## How to read it
 
