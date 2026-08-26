@@ -385,6 +385,26 @@ bundle can therefore name the exact component bytes that acted —
 per-component witness is what the tree buys, and an encoding that cannot
 yield it is not a bundle.
 
+### kit
+
+The distribution surface for tool packages: a directory holding one or more
+[packages](#package) plus a declared tool set to make available on install.
+A kit in a git repository is the same directory once cloned; fetching is
+acquisition, not a kernel verb. Authoring grammar is `verlet.kit.toml` at
+the directory root. Installing a kit builds and publishes each member
+package through the normal gate and records the declared tool set for
+default availability (today the default manifest; the default
+[preset](#preset) once that migration lands). The kernel sees only the
+publishes and the resulting rows.
+
+Named 2026-08-25 ahead of implementation per the naming law (tool pack
+distribution). "Pack" was rejected as a word: too close to package to name
+a second concept.
+
+Law: a kit is surface grammar, never a kernel primitive. Nothing resolves
+against a kit at run time; every run-time reference is to the
+content-addressed operations its installation published.
+
 ### register
 
 The operation that admits content into a scope the runtime provisions: the
