@@ -463,6 +463,27 @@ replaces every use the deleted expiry machinery ever had. A detach of a
 tool mid-call lets the running turn finish; it takes effect at the turn
 boundary like any other.
 
+### bound parameter
+
+A field of an operation's input that the host supplies from the
+[binding](#binding), never from the model. The operation's input schema
+remains the implementation's single contract; the [tool](#tool) surface the
+model sees is derived from it by removing the bound parameters and lifting
+the declared model-args field to the top level. Values are resolved when the
+binding is attached and ride the binding configuration, so every
+invocation's receipt chains to the attach event that pinned them. Named
+2026-08-26 ahead of implementation per the naming law (kit tool envelope
+split).
+
+Law: a bound parameter never appears in a model-visible schema, and a
+model-supplied value for one is rejected, never merged. A surface that asks
+the model for a value the host will override is unfaithful.
+
+Law: the model-facing schema is derived from the operation's input schema,
+never hand-authored beside it. One contract, two derived views: the full
+envelope for the host and CLI lanes, the lifted model-args schema for the
+tool surface.
+
 ### alias
 
 A mutable name. Aliases must resolve to immutable records at publish or run
